@@ -19,10 +19,6 @@ const userSchema = new mongoose.Schema({
   last_connection: { type: Date },
 })
 
-// userSchema.methods.updateLastConnection = function () {
-//   this.last_connection = new Date();
-// };
-
 const userModel = mongoose.model(userCollecion, userSchema)
 
 module.exports =  userModel

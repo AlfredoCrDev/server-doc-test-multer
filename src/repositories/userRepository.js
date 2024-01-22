@@ -96,29 +96,24 @@ class UserRepository {
     }
   }
 
-  async updateDocuments (userId, ...files) {
+  async updateDocuments (userId, documents) {
     try {
-      const user = await userModel.findOne({_id: userId});
-  
-      if (!user) {
-        throw new Error('Usuario no encontrado');
+      const updateDocument = await userModel.findByIdAndUpdate(
+        userId,
+        { $push: { documents: { $each: documents } } },
+        { new: true });
+
+      if (updateDocument.documents.length >= 3 && updateDocument.rol === "usuario") {
+        await userModel.findByIdAndUpdate(userId, { rol: "premium" }, { new: true });
+        console.log("Rol cambiado a premium");
       }
-  
-      // Crea instancias de documentos utilizando el modelo Document.
-      const documentInstances = files.map(file => new Document(file));
-  
-      // Guarda los documentos en la base de datos.
-      const savedDocuments = await userModel.insertMany(documentInstances);
-  
-      // Asocia los documentos al usuario.
-      user.documents.push(...savedDocuments);
-  
-      // Guarda la actualización del usuario.
-      await user.save();
+        
+      return updateDocument;
     } catch (error) {
-      throw new Error('Error al actualizar los documentos del usuario');
+      throw error
     }
-  };
+  }
+
 }
 
 module.exports = UserRepository;

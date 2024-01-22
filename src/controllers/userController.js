@@ -2,6 +2,7 @@ const userService = require('../services/userService');
 const utils = require("../utils")
 const passport = require("passport")
 const nodemailer = require("nodemailer")
+const path = require("path");
 
 
 class UserController {
@@ -220,8 +221,34 @@ async createUser(req, res) {
   async uploadDocuments (req, res){
     try {
       const userId = req.params.uid;
-      await userService.uploadDocuments(userId, req.files);
-      res.send({ status: "success", message: "Archivos Guardados" });
+      const files = req.files
+
+      if (!Object.keys(files).length) {
+        req.logger.warn("No se adjunto ningun archivo")
+        return res.status(400).json({ status: "error", message:'No se enviaron archivos' })
+      }
+
+      let user = await userService.getUserById(userId);
+      if (!user) {
+        req.logger.warn("Usuario no encontrado")
+        return res.status(404).json({ status: 'error', error: 'Usuario no encontrado' });
+      }
+
+      const document = []
+      const documentFile = files.find(file => file.fieldname === 'document');
+
+      const rutaCompleta = documentFile.path;
+      const rutaRelativa = path.relative(__dirname, rutaCompleta);
+      const documentData = {
+            name: documentFile.originalname,
+            reference: rutaRelativa
+          }
+      document.push(documentData)
+
+      await userService.uploadDocuments(userId, document);
+      
+      req.logger.info("Archivos Guardados")
+      res.status(200).send({ status: "success", message: "Archivos Guardados" });
     } catch (error) {
       req.logger.error("Error al tratar de subir la documentacion");
       res.status(500).json({ status: 'error', error: 'Error interno del servidor' });

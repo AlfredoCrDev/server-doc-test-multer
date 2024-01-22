@@ -449,12 +449,13 @@ const uploadForm = document.getElementById('uploadForm')
           method:'POST',
           body:formData
           })
-          if(!res.ok) throw new Error("Server response wasn't OK")
-          alert('Imagen subida correctamente!')
+          console.log("RESSSS", res);
+          if(!res.ok) throw new Error("Error al tratar de subir el archivo")
+          alert('Archivo subido correctamente!')
         location.reload()
         }catch(err){
           console.log(err)
-          alert('Ocurrió un error al subir la imagen')
+          alert('Ocurrió un error al subir el archivo')
         }
     })
   }

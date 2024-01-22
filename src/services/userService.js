@@ -66,28 +66,13 @@ async function toggleUserRole(userId) {
   }
 }
 
-async function uploadDocuments(userId, files){
-  const user = await userRepository.getUserById(userId);
-
-  if (!user) {
-    throw new Error('Usuario no encontrado');
+async function uploadDocuments(userId, documents){
+  try {
+    const uploadDocuments = await userRepository.updateDocuments(userId, documents);
+    return uploadDocuments;
+  } catch (error) {
+    throw new Error(`Error al tratar de subir la referencia del documento al usuario ${error.message}`);
   }
-
-  const processFiles = async (field) => {
-    if (files[field]) {
-      const fieldFiles = files[field].map(file => ({ name: field, path: file.path }));
-      await usersMongo.updateDocuments(userId, ...fieldFiles);
-      return fieldFiles;
-    }
-    return [];
-  };
-
-  const profiles = await processFiles('profiles');
-  const products = await processFiles('products');
-  const documents = await processFiles('documents');
-  const identificacion = await processFiles("identificacion")
-  const comprobanteDomicilio = await processFiles("comprobanteDomicilio")
-  const estadoDeCuenta = await processFiles("estadoDeCuenta")
 }
 
 module.exports = {
